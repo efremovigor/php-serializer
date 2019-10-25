@@ -1,0 +1,1 @@
+The Serializer is used for packing and unpacking data of a different format
