@@ -61,7 +61,7 @@ class Serializer
             return $this->performNormalize($source, $subject, $flags);
         } catch (\Throwable $exception) {
             /**
-             * todo::возможно стоит ошибку в какой-нибудь ServiceError{}
+             * todo::возможно стоит ошибку упаковать в какой-нибудь ServiceError{}
              */
             return null;
         }
@@ -79,7 +79,7 @@ class Serializer
             return $this->performSerialize($source, $type, $flags);
         } catch (\Throwable $exception) {
             /**
-             * todo::возможно стоит ошибку в какой-нибудь ServiceError{}
+             * todo::возможно стоит ошибку упаковать в какой-нибудь ServiceError{}
              */
             return null;
         }
