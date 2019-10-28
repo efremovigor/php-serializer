@@ -19,8 +19,11 @@ use Test\Kluatr\Serializer\Entity\SerializerFixtures;
 use Test\Kluatr\Serializer\Entity\SerializerOld;
 use Test\Kluatr\Serializer\Entity\TestClass;
 use Test\Kluatr\Serializer\Entity\TestClass3;
+use Test\Kluatr\Serializer\Entity\TestClass3Strict;
 use Test\Kluatr\Serializer\Entity\TestClassChild;
+use Test\Kluatr\Serializer\Entity\TestClassStrictWithArrays;
 use Test\Kluatr\Serializer\Entity\TestClassStrictWithJsonObject;
+use Test\Kluatr\Serializer\Entity\TestClassWithArrays;
 use Test\Kluatr\Serializer\Entity\TestClassWithJsonObject;
 use Test\Kluatr\Serializer\Entity\TestCollectionClass;
 use Test\Kluatr\Serializer\Entity\TestCollectionClass2;
@@ -1039,6 +1042,79 @@ class SerializerTest extends TestCase
         $this->assertEquals($array['json']['z'], 10);
         $array1 = $this->serializer->normalize($entity);
         $this->assertEquals($array1['json'], '{"x":3,"z":10}');
+    }
+
+    public function testListWithArrayToArray()
+    {
+        $obj = new TestClassWithArrays();
+        $obj->setData(
+            [
+                $this->serializer->normalize(['a' => 1], TestClass::class),
+                $this->serializer->normalize(['a' => 2], TestClass::class),
+            ]
+        );
+        $array = $this->serializer->normalize($obj);
+        $this->assertTrue($array['data'][0]['a'] === 1);
+        $this->assertTrue($array['data'][1]['a'] === 2);
+
+        $obj = new TestClassStrictWithArrays();
+        $obj->setData(
+            [
+                $this->serializer->normalize(['a' => 1], TestClass::class),
+                $this->serializer->normalize(['a' => 2], TestClass::class),
+            ]
+        );
+        $array = $this->serializer->normalize($obj);
+        $this->assertTrue($array['data'][0]['a'] === 1);
+        $this->assertTrue($array['data'][1]['a'] === 2);
+    }
+
+    public function testAddableStrict()
+    {
+        $array = ['data' => [1, 2, 3, 4]];
+        $obj   = new TestClassStrictWithArrays();
+        $obj->setData([5, 6, 7, 8, 9, 10]);
+        $obj = $this->serializer->normalize($array, $obj, Serializer::ADDABLE);
+        $this->assertEquals($obj->getData(), [1, 2, 3, 4, 9, 10]);
+
+        $array = ['data' => [1, 2, 3, 4]];
+        $obj   = new TestClassWithArrays();
+        $obj->setData([5, 6, 7, 8, 9, 10]);
+        $obj = $this->serializer->normalize($array, $obj, Serializer::ADDABLE);
+        $this->assertEquals($obj->getData(), [5, 6, 7, 8, 9, 10, 1, 2, 3, 4]);
+    }
+
+    public function testNullableStrict()
+    {
+        $array = ['qwe' => null];
+        $obj   = new TestClassStrictWithArrays();
+        $obj->setQwe('asdfg');
+
+        $obj = $this->serializer->normalize($array, $obj, Serializer::REWRITABLE);
+        $this->assertEquals($obj->getQwe(), 'asdfg');
+
+        $obj = $this->serializer->normalize($array, $obj, Serializer::NULLABLE);
+        $this->assertEquals($obj->getQwe(), 'asdfg');
+
+        $obj = $this->serializer->normalize($array, $obj, Serializer::REWRITABLE | Serializer::NULLABLE);
+        $this->assertEquals($obj->getQwe(), null);
+    }
+
+    public function testCamelStrict()
+    {
+        $fixture = ['_prop1' => 1, '_prop2_prop' => 2, '_prop3_prop_' => 3, 'prop4' => 4];
+        $error   = false;
+        try {
+            $obj = $this->serializer->normalize($fixture, TestClass3Strict::class);
+        } catch (\Throwable $exception) {
+            $error = true;
+        }
+        $this->assertTrue($error);
+        $obj = $this->serializer->normalize($fixture, TestClass3::class, Serializer::CAMEL_FORCE);
+        $this->assertEquals($obj->getProp1(), 1);
+        $this->assertEquals($obj->getProp2Prop(), 2);
+        $this->assertEquals($obj->getProp3Prop(), 3);
+        $this->assertEquals($obj->getProp4(), 4);
     }
 
     /**

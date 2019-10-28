@@ -485,6 +485,7 @@ class Serializer
     }
 
     /**
+     * @deprecated
      * @param PropertyStrictAccessInterface|PropertyAccessInterface $object
      * @param int $flags
      * @return string
@@ -648,7 +649,7 @@ class Serializer
 
         foreach ($subject->getPropertiesStrict() as $nameProperty => $propertyInfo) {
 
-            if (!isset($source[$nameProperty])) {
+            if (!array_key_exists($nameProperty,$source)) {
                 continue;
             }
 
@@ -882,14 +883,14 @@ class Serializer
                      * $fakeSubject не пуст если внутри $sourceData лежат обьекты
                      */
                     $fakeSubject = [];
-                    foreach ($sourceData as $key => &$data) {
+                    foreach ($sourceData as $key => $data) {
                         if (is_object($data)) {
                             if ($data instanceof PropertyAccessInterface) {
                                 $fakeSubject[$key] = [];
-                                $this->objectToArray($data, $fakeSubject[$key]);
+                                $this->objectToArray($sourceData[$key], $fakeSubject[$key]);
                             } elseif ($data instanceof PropertyStrictAccessInterface) {
                                 $fakeSubject[$key] = [];
-                                $this->objectToArrayStrict($data, $fakeSubject[$key]);
+                                $this->objectToArrayStrict($sourceData[$key], $fakeSubject[$key]);
                             }
 
                         }
@@ -953,7 +954,7 @@ class Serializer
                 foreach ($sourceData as $key => &$data) {
                     if (is_object($data) && $data instanceof PropertyAccessInterface) {
                         $fakeSubject[$key] = [];
-                        $this->objectToArray($data, $fakeSubject[$key]);
+                        $this->objectToArray($sourceData[$key], $fakeSubject[$key]);
                     }
                 }
                 $sourceData = array_replace($sourceData, $fakeSubject);
