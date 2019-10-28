@@ -1,15 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: igore
- * Date: 25.04.18
- * Time: 14:48
- */
 
 namespace Kluatr\Serializer;
 
-
-use Kluatr\Serializer\Error\EntityIsNotChosen;
+use Kluatr\Serializer\Error\EntityIsNotChosenException;
 
 /**
  * Поведение класса содержащий коллекцию классов одного типа
@@ -22,7 +15,7 @@ interface ContainsCollectionInterface
     /**
      * Имя класса списка
      * @return string
-     * @throws EntityIsNotChosen
+     * @throws EntityIsNotChosenException
      */
     public function getClass(): string;
 

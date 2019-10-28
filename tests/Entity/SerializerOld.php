@@ -4,7 +4,7 @@ namespace Test\Kluatr\Serializer\Entity;
 
 
 use Kluatr\Serializer\ContainsCollectionInterface;
-use Kluatr\Serializer\Error\EntityIsNotChosen;
+use Kluatr\Serializer\Error\EntityIsNotChosenException;
 use Kluatr\Serializer\HasJsonPropertiesInterface;
 use Kluatr\Serializer\PropertyAccessInterface;
 use Kluatr\Serializer\RenameMappingInterface;
@@ -203,7 +203,7 @@ class SerializerOld
      * @param array $source
      * @param ContainsCollectionInterface $subject
      * @param $flags
-     * @throws EntityIsNotChosen
+     * @throws EntityIsNotChosenException
      */
     private function arrayToCollectionObject(array $source, ContainsCollectionInterface $subject, $flags): void
     {
@@ -635,7 +635,7 @@ class SerializerOld
      * @param ContainsCollectionInterface $source
      * @param ContainsCollectionInterface $subject
      * @param int $flags
-     * @throws EntityIsNotChosen
+     * @throws EntityIsNotChosenException
      */
     private function collectionToCollection(ContainsCollectionInterface $source, ContainsCollectionInterface $subject, int $flags)
     {
@@ -657,7 +657,7 @@ class SerializerOld
      * @param ContainsCollectionInterface $collection
      * @param string $property
      * @return array
-     * @throws EntityIsNotChosen
+     * @throws EntityIsNotChosenException
      * @deprecated использовать getColumn из AbstractList
      */
     public function getColumnByList(ContainsCollectionInterface $collection, string $property): array

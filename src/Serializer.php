@@ -2,10 +2,10 @@
 
 namespace Kluatr\Serializer;
 
-use Kluatr\Serializer\Error\EntityIsNotChosen;
-use Kluatr\Serializer\Error\EntityIsNotDescribed;
-use Kluatr\Serializer\Error\InvalidRegistrationOfProperty;
-use Kluatr\Serializer\Error\PropertyWithUnknownType;
+use Kluatr\Serializer\Error\EntityIsNotChosenException;
+use Kluatr\Serializer\Error\EntityIsNotDescribedException;
+use Kluatr\Serializer\Error\InvalidRegistrationOfPropertyException;
+use Kluatr\Serializer\Error\PropertyWithUnknownTypeException;
 use stdClass;
 
 /**
@@ -89,10 +89,10 @@ class Serializer
      * @param $source
      * @param int $flags
      * @return mixed
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
-     * @throws InvalidRegistrationOfProperty
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
+     * @throws InvalidRegistrationOfPropertyException
      */
     public function jsonSignificant($source, int $flags = Serializer::ONLY_FILLED)
     {
@@ -103,9 +103,9 @@ class Serializer
      * @param ContainsCollectionInterface $collection
      * @param string $property
      * @return string|null
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws InvalidRegistrationOfProperty
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws InvalidRegistrationOfPropertyException
      */
     public function getGetterByCollection(ContainsCollectionInterface $collection, string $property)
     {
@@ -181,10 +181,10 @@ class Serializer
      * @param $data
      * @param $entity
      * @return mixed
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
-     * @throws InvalidRegistrationOfProperty
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
+     * @throws InvalidRegistrationOfPropertyException
      */
     public function entityFill($data, $entity)
     {
@@ -219,10 +219,10 @@ class Serializer
      * @param null $subject
      * @param int $flags
      * @return array|mixed|null
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
-     * @throws InvalidRegistrationOfProperty
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
+     * @throws InvalidRegistrationOfPropertyException
      */
     private function performNormalize($source, $subject = null, int $flags = self::ADDABLE)
     {
@@ -358,10 +358,10 @@ class Serializer
      * @param string $type
      * @param int $flags
      * @return array|false|mixed|string|null
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
-     * @throws InvalidRegistrationOfProperty
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
+     * @throws InvalidRegistrationOfPropertyException
      */
     private function performSerialize($source, string $type = 'json', int $flags = 0)
     {
@@ -408,10 +408,10 @@ class Serializer
      * @param array $source
      * @param ContainsCollectionInterface $subject
      * @param $flags
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
-     * @throws InvalidRegistrationOfProperty
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
+     * @throws InvalidRegistrationOfPropertyException
      */
     private function arrayToCollectionObject(array $source, ContainsCollectionInterface $subject, $flags): void
     {
@@ -426,10 +426,10 @@ class Serializer
      * @param mixed $subject
      * @param int $flags
      * @return void
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
-     * @throws InvalidRegistrationOfProperty
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
+     * @throws InvalidRegistrationOfPropertyException
      */
     private function objectToObject(PropertyAccessInterface $source, &$subject, int $flags = self::ADDABLE): void
     {
@@ -494,8 +494,8 @@ class Serializer
      * @param PropertyStrictAccessInterface|PropertyAccessInterface $object
      * @param int $flags
      * @return string
-     * @throws EntityIsNotDescribed
-     * @throws InvalidRegistrationOfProperty
+     * @throws EntityIsNotDescribedException
+     * @throws InvalidRegistrationOfPropertyException
      */
     private function indexClass($object, int $flags)
     {
@@ -510,7 +510,7 @@ class Serializer
                         }
                         $currentNameProperty = $this->isCamelForce($flags) ? $this->toCamel($nameProperty) : $nameProperty;
                         if (empty($propertyInfo['type'])) {
-                            throw new InvalidRegistrationOfProperty();
+                            throw new InvalidRegistrationOfPropertyException();
                         }
                         static::$entityCache[$sourceCacheKey][$nameProperty] = [
                             'getter' => $this->getGetterByType($currentNameProperty, $propertyInfo['type']),
@@ -537,7 +537,7 @@ class Serializer
                     }
                     break;
                 default:
-                    throw new EntityIsNotDescribed('Класс не реализует никакой удовлетворительный интерфейс преобразования - ' . $sourceClassName);
+                    throw new EntityIsNotDescribedException('Класс не реализует никакой удовлетворительный интерфейс преобразования - ' . $sourceClassName);
             }
         }
 
@@ -568,10 +568,10 @@ class Serializer
      * @param PropertyStrictAccessInterface $source
      * @param PropertyStrictAccessInterface|PropertyAccessInterface $subject
      * @param int $flags
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
-     * @throws InvalidRegistrationOfProperty
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
+     * @throws InvalidRegistrationOfPropertyException
      */
     private function objectToObjectStrict(PropertyStrictAccessInterface $source, &$subject, int $flags = self::ADDABLE)
     {
@@ -643,10 +643,10 @@ class Serializer
      * @param array $source
      * @param PropertyStrictAccessInterface $subject
      * @param int $flags
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
-     * @throws EntityIsNotChosen
-     * @throws InvalidRegistrationOfProperty
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
+     * @throws EntityIsNotChosenException
+     * @throws InvalidRegistrationOfPropertyException
      */
     private function arrayToObjectStrict(array $source, PropertyStrictAccessInterface &$subject, int $flags = self::ADDABLE): void
     {
@@ -707,10 +707,10 @@ class Serializer
      * @param array $source
      * @param mixed $subject
      * @param int $flags
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
-     * @throws InvalidRegistrationOfProperty
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
+     * @throws InvalidRegistrationOfPropertyException
      */
     private function arrayToObject(array $source, &$subject, int $flags = self::ADDABLE): void
     {
@@ -780,10 +780,10 @@ class Serializer
      * @param array $source
      * @param stdClass $subject
      * @param int $flags
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
-     * @throws InvalidRegistrationOfProperty
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
+     * @throws InvalidRegistrationOfPropertyException
      */
     private function arrayToStdClass(array $source, stdClass &$subject, int $flags = self::ADDABLE): void
     {
@@ -827,10 +827,10 @@ class Serializer
      * @param PropertyStrictAccessInterface $source
      * @param array $subject
      * @param int $flags
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
-     * @throws InvalidRegistrationOfProperty
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
+     * @throws InvalidRegistrationOfPropertyException
      */
     private function objectToArrayStrict(PropertyStrictAccessInterface $source, array &$subject = [], int $flags = self::ADDABLE): void
     {
@@ -923,10 +923,10 @@ class Serializer
      * @param PropertyAccessInterface $source
      * @param array $subject
      * @param int $flags
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
-     * @throws InvalidRegistrationOfProperty
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
+     * @throws InvalidRegistrationOfPropertyException
      */
     private function objectToArray(PropertyAccessInterface $source, array &$subject = [], int $flags = self::ADDABLE): void
     {
@@ -1014,10 +1014,10 @@ class Serializer
      * @param ContainsCollectionInterface $source
      * @param array $subject
      * @param int $flags
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
-     * @throws InvalidRegistrationOfProperty
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
+     * @throws InvalidRegistrationOfPropertyException
      */
     private function collectionToArray(ContainsCollectionInterface $source, array &$subject, int $flags)
     {
@@ -1174,10 +1174,10 @@ class Serializer
      * @param ContainsCollectionInterface $source
      * @param ContainsCollectionInterface $subject
      * @param int $flags
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
-     * @throws InvalidRegistrationOfProperty
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
+     * @throws InvalidRegistrationOfPropertyException
      */
     private function collectionToCollection(ContainsCollectionInterface $source, ContainsCollectionInterface $subject, int $flags)
     {
@@ -1212,7 +1212,7 @@ class Serializer
      * @param string $type
      * @param $value
      * @return bool|float|int|string
-     * @throws PropertyWithUnknownType
+     * @throws PropertyWithUnknownTypeException
      */
     private function setType(string $type, $value)
     {
@@ -1226,6 +1226,6 @@ class Serializer
             case $type & static::TYPE_FLOAT:
                 return (float)($value);
         }
-        throw new PropertyWithUnknownType('Неизвестный тип данных -' . $type);
+        throw new PropertyWithUnknownTypeException('Неизвестный тип данных -' . $type);
     }
 }

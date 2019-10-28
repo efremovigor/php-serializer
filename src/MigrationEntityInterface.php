@@ -9,15 +9,15 @@ namespace Kluatr\Serializer;
 interface MigrationEntityInterface
 {
     /**
+     * @return array
      * [
      *  ClassName::class => [
      *      nativePropertyName => externalPropertyName
-     *  ...
-     * ]
+     *      ...
+     *  ]
      *  ClassName1::class => []
-     * ...
-     * ]
-     * @return array
+     *  ...
+     *  ]
      */
-    public function getEntityRelations():array ;
+    public function getEntityRelations(): array;
 }

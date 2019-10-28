@@ -3,9 +3,9 @@
 namespace Test\Kluatr\Serializer;
 
 use Exception;
-use Kluatr\Serializer\Error\EntityIsNotChosen;
-use Kluatr\Serializer\Error\EntityIsNotDescribed;
-use Kluatr\Serializer\Error\PropertyWithUnknownType;
+use Kluatr\Serializer\Error\EntityIsNotChosenException;
+use Kluatr\Serializer\Error\EntityIsNotDescribedException;
+use Kluatr\Serializer\Error\PropertyWithUnknownTypeException;
 use PHPUnit\Framework\TestCase;
 use Kluatr\Serializer\Serializer;
 use stdClass;
@@ -862,9 +862,9 @@ class SerializerTest extends TestCase
     }
 
     /**
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
      */
     public function testStrictFullPackObjectToJson()
     {
@@ -880,9 +880,9 @@ class SerializerTest extends TestCase
     }
 
     /**
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
      */
     public function testStrictFullPackObjectToObject()
     {
@@ -927,9 +927,9 @@ class SerializerTest extends TestCase
     }
 
     /**
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
      */
     public function testBigDataEntityStrictWithoutConstructor()
     {
@@ -943,9 +943,9 @@ class SerializerTest extends TestCase
     }
 
     /**
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
      */
     public function testBigDataEntityStrictWithoutConstructorStrict()
     {
@@ -955,9 +955,9 @@ class SerializerTest extends TestCase
     }
 
     /**
-     * @throws EntityIsNotDescribed
-     * @throws EntityIsNotChosen
-     * @throws PropertyWithUnknownType
+     * @throws EntityIsNotDescribedException
+     * @throws EntityIsNotChosenException
+     * @throws PropertyWithUnknownTypeException
      */
     public function testMigrationEntity()
     {
@@ -1022,9 +1022,9 @@ class SerializerTest extends TestCase
     }
 
     /**
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws PropertyWithUnknownTypeException
      */
     public function testDataWithJsonToObjectAndBack()
     {
