@@ -1048,18 +1048,4 @@ class SerializerTest extends TestCase
     {
         return new TestClass();
     }
-
-    private function timeFormat($begin, $end): float
-    {
-        return round($end - $begin, 2);
-    }
-
-    private function getTime(callable $function): float
-    {
-        $begin = microtime(true);
-        $function();
-        $end = microtime(true);
-
-        return $this->timeFormat($begin, $end);
-    }
 }

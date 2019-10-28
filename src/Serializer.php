@@ -4,6 +4,7 @@ namespace Kluatr\Serializer;
 
 use Kluatr\Serializer\Error\EntityIsNotChosen;
 use Kluatr\Serializer\Error\EntityIsNotDescribed;
+use Kluatr\Serializer\Error\InvalidRegistrationOfProperty;
 use Kluatr\Serializer\Error\PropertyWithUnknownType;
 use stdClass;
 
@@ -52,11 +53,177 @@ class Serializer
      * @param       $subject
      * @param int $flags
      * @return mixed
+     */
+    public function normalize($source, $subject = null, int $flags = self::ADDABLE)
+    {
+        try {
+            return $this->performNormalize($source, $subject, $flags);
+        } catch (\Throwable $exception) {
+            /**
+             * todo::возможно стоит ошибку в какой-нибудь ServiceError{}
+             */
+            return null;
+        }
+    }
+
+    /**
+     * @param        $source
+     * @param string $type
+     * @param int $flags
+     * @return mixed
+     */
+    public function serialize($source, string $type = 'json', int $flags = 0)
+    {
+        try {
+            return $this->performSerialize($source, $type, $flags);
+        } catch (\Throwable $exception) {
+            /**
+             * todo::возможно стоит ошибку в какой-нибудь ServiceError{}
+             */
+            return null;
+        }
+    }
+
+    /**
+     * @param $source
+     * @param int $flags
+     * @return mixed
      * @throws EntityIsNotChosen
      * @throws EntityIsNotDescribed
      * @throws PropertyWithUnknownType
+     * @throws InvalidRegistrationOfProperty
      */
-    public function normalize($source, $subject = null, int $flags = self::ADDABLE)
+    public function jsonSignificant($source, int $flags = Serializer::ONLY_FILLED)
+    {
+        return $this->performSerialize($source, 'json', $flags);
+    }
+
+    /**
+     * @param ContainsCollectionInterface $collection
+     * @param string $property
+     * @return string|null
+     * @throws EntityIsNotChosen
+     * @throws EntityIsNotDescribed
+     * @throws InvalidRegistrationOfProperty
+     */
+    public function getGetterByCollection(ContainsCollectionInterface $collection, string $property)
+    {
+        $class           = $collection->getClass();
+        $subjectCacheKey = $this->getKeyOfCachedClass($class, self::ADDABLE);
+
+        if (!$this->issetCache($subjectCacheKey)) {
+            $subjectCacheKey = $this->indexClass(new $class(), self::ADDABLE);
+        }
+
+        return static::$entityCache[$subjectCacheKey][$property]['getter'];
+    }
+
+    /**
+     * @param $key
+     *
+     * @return string
+     */
+    public function setMethod(string $key): string
+    {
+        return 'set' . ucfirst($key);
+    }
+
+    /**
+     * @param $key
+     *
+     * @return string
+     */
+    public function getMethod(string $key): string
+    {
+        return 'get' . ucfirst($key);
+    }
+
+    /**
+     * @param $key
+     *
+     * @return string
+     */
+    public function addMethod(string $key): string
+    {
+        return 'add' . ucfirst($key);
+    }
+
+    /**
+     * @param $source
+     * @param string $key
+     * @return string
+     */
+    public function getExistingGetter($source, string $key): ?string
+    {
+        switch (true) {
+            case preg_match('/^is[A-Z].*/', $key) && method_exists($source, $key):
+                return $key;
+            case method_exists($source, $this->getMethod($key)):
+                return $this->getMethod($key);
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * @param $data
+     * @return bool
+     */
+    public function isJson($data): bool
+    {
+        $data = json_decode($data, true);
+
+        return (json_last_error() === JSON_ERROR_NONE) && is_array($data);
+    }
+
+    /**
+     * @param $data
+     * @param $entity
+     * @return mixed
+     * @throws EntityIsNotChosen
+     * @throws EntityIsNotDescribed
+     * @throws PropertyWithUnknownType
+     * @throws InvalidRegistrationOfProperty
+     */
+    public function entityFill($data, $entity)
+    {
+        return $this->performNormalize($data, $entity, Serializer::REWRITABLE | Serializer::CAMEL_FORCE | Serializer::ADDABLE | Serializer::FORCE_TYPE);
+    }
+
+    /**
+     * @param ContainsCollectionInterface $collection
+     * @param array $keys
+     * @return ContainsCollectionInterface
+     * @deprecated
+     * Фильтруем лист по ключам
+     */
+    public function getFilteredList(ContainsCollectionInterface $collection, array $keys): ContainsCollectionInterface
+    {
+        /**
+         * @var $newCollection ContainsCollectionInterface
+         */
+        $classList     = get_class($collection);
+        $newCollection = new $classList();
+        foreach ($keys as $key) {
+            if ($collection->has($key)) {
+                $newCollection->set($key, $collection->get($key));
+            }
+        }
+
+        return $newCollection;
+    }
+
+    /**
+     * @param $source
+     * @param null $subject
+     * @param int $flags
+     * @return array|mixed|null
+     * @throws EntityIsNotChosen
+     * @throws EntityIsNotDescribed
+     * @throws PropertyWithUnknownType
+     * @throws InvalidRegistrationOfProperty
+     */
+    private function performNormalize($source, $subject = null, int $flags = self::ADDABLE)
     {
         switch (true) {
             case is_object($subject):
@@ -73,7 +240,7 @@ class Serializer
                     case $source instanceOf StdClass:
                         $tmpArray = [];
                         $this->stdClassToArray($source, $tmpArray, $flags);
-                        $this->normalize($tmpArray, $subject, $flags);
+                        $this->performNormalize($tmpArray, $subject, $flags);
                         break;
                     /** object -> object{PropertyAccessInterface} */
                     case $source instanceOf PropertyAccessInterface:
@@ -101,14 +268,14 @@ class Serializer
                         break;
                     /** json -> object */
                     case $this->isJson($source):
-                        $this->normalize(json_decode($source, true), $subject, $flags);
+                        $this->performNormalize(json_decode($source, true), $subject, $flags);
                         break;
                 }
                 break;
             /** Создает класс по имени и рекурсивно вызываем */
             case is_string($subject):
                 if (class_exists($subject)) {
-                    $subject = $this->normalize($source, new $subject(), $flags);
+                    $subject = $this->performNormalize($source, new $subject(), $flags);
                 } else {
                     $subject = $source;
                 }
@@ -140,14 +307,14 @@ class Serializer
                             switch (true) {
                                 /** Если элемент массива - массив, и он определен в субьекте - то лезем внутрь */
                                 case is_array($element) && isset($subject[$key]):
-                                    $subject[$key] = $this->normalize($element, $subject[$key], $flags);
+                                    $subject[$key] = $this->performNormalize($element, $subject[$key], $flags);
                                     break;
                                 /** если внутри массива обьект */
                                 case is_object($element):
                                 case $element instanceOf PropertyAccessInterface :
                                 case $element instanceof PropertyStrictAccessInterface:
                                 case $element instanceof ContainsCollectionInterface:
-                                    $subject[$key] = $this->normalize($element, [], $flags);
+                                    $subject[$key] = $this->performNormalize($element, [], $flags);
                                     break;
                                 /** стандартное поведение */
                                 default:
@@ -182,20 +349,20 @@ class Serializer
                 $subject = $source;
         }
 
-
         return $subject;
     }
 
     /**
-     * @param        $source
+     * @param $source
      * @param string $type
      * @param int $flags
-     * @return mixed
+     * @return array|false|mixed|string|null
      * @throws EntityIsNotChosen
      * @throws EntityIsNotDescribed
      * @throws PropertyWithUnknownType
+     * @throws InvalidRegistrationOfProperty
      */
-    public function serialize($source, string $type = 'json', int $flags = 0)
+    private function performSerialize($source, string $type = 'json', int $flags = 0)
     {
         switch (true) {
             case is_string($source) && $this->isJson($source):
@@ -207,7 +374,7 @@ class Serializer
             case $source instanceOf PropertyAccessInterface:
             case $source instanceOf PropertyStrictAccessInterface:
             case $source instanceOf ContainsCollectionInterface:
-                $source = $this->normalize($source, null, $flags | self::ARRAY_WITHOUT_JSON);
+                $source = $this->performNormalize($source, null, $flags | self::ARRAY_WITHOUT_JSON);
             case is_array($source):
                 if ($this->isSerializeFilled($flags)) {
                     $source = $this->arrayFilterRecursive(
@@ -223,7 +390,7 @@ class Serializer
                 }
                 foreach ($source as $key => $value) {
                     if (is_object($value)) {
-                        $source[$key] = $this->normalize($value, null, $flags | self::ARRAY_WITHOUT_JSON);
+                        $source[$key] = $this->performNormalize($value, null, $flags | self::ARRAY_WITHOUT_JSON);
                     }
                 }
                 if ($type === 'json') {
@@ -236,19 +403,6 @@ class Serializer
     }
 
     /**
-     * @param $source
-     * @param int $flags
-     * @return mixed
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
-     */
-    public function jsonSignificant($source, int $flags = Serializer::ONLY_FILLED)
-    {
-        return $this->serialize($source, 'json', $flags);
-    }
-
-    /**
      * Циклом нормализует данные в обьекте(кеп)
      * @param array $source
      * @param ContainsCollectionInterface $subject
@@ -256,11 +410,12 @@ class Serializer
      * @throws EntityIsNotChosen
      * @throws EntityIsNotDescribed
      * @throws PropertyWithUnknownType
+     * @throws InvalidRegistrationOfProperty
      */
     private function arrayToCollectionObject(array $source, ContainsCollectionInterface $subject, $flags): void
     {
         foreach ($source as $key => $property) {
-            $subject->set($key, $this->normalize($property, $subject->getClass(), $flags));
+            $subject->set($key, $this->performNormalize($property, $subject->getClass(), $flags));
         }
     }
 
@@ -273,6 +428,7 @@ class Serializer
      * @throws EntityIsNotChosen
      * @throws EntityIsNotDescribed
      * @throws PropertyWithUnknownType
+     * @throws InvalidRegistrationOfProperty
      */
     private function objectToObject(PropertyAccessInterface $source, &$subject, int $flags = self::ADDABLE): void
     {
@@ -314,7 +470,7 @@ class Serializer
                 is_object($subject->$subjectGetter()) &&
                 (is_array($source->$sourceGetter()) || is_object($source->$sourceGetter()))
             ) {
-                $this->normalize($source->$sourceGetter(), $subject->$subjectGetter(), $flags);
+                $this->performNormalize($source->$sourceGetter(), $subject->$subjectGetter(), $flags);
                 continue;
             }
             /**
@@ -338,6 +494,7 @@ class Serializer
      * @param int $flags
      * @return string
      * @throws EntityIsNotDescribed
+     * @throws InvalidRegistrationOfProperty
      */
     private function indexClass($object, int $flags)
     {
@@ -351,7 +508,9 @@ class Serializer
                             $nameProperty = $object->getRenameMapping()[$nameProperty];
                         }
                         $currentNameProperty = $this->isCamelForce($flags) ? $this->toCamel($nameProperty) : $nameProperty;
-
+                        if (empty($propertyInfo['type'])) {
+                            throw new InvalidRegistrationOfProperty();
+                        }
                         static::$entityCache[$sourceCacheKey][$nameProperty] = [
                             'getter' => $this->getGetterByType($currentNameProperty, $propertyInfo['type']),
                             'setter' => $this->setMethod($currentNameProperty),
@@ -411,6 +570,7 @@ class Serializer
      * @throws EntityIsNotChosen
      * @throws EntityIsNotDescribed
      * @throws PropertyWithUnknownType
+     * @throws InvalidRegistrationOfProperty
      */
     private function objectToObjectStrict(PropertyStrictAccessInterface $source, &$subject, int $flags = self::ADDABLE)
     {
@@ -451,13 +611,16 @@ class Serializer
                     $subject->$setMethod($source->$sourceGetter());
                     continue 2;
                 case static::TYPE_OBJECT & $propertyInfo['type']:
-                    if (static::TYPE_NULL & $propertyInfo['type'] && $source->$sourceGetter() === null) {
-                        continue 2;
+                    if (static::TYPE_NULL & $propertyInfo['type']) {
+                        if ($source->$sourceGetter() === null) {
+                            continue 2;
+                        }
+                        if ($subject->$subjectGetter() === null) {
+                            $subject->$setMethod(new $propertyInfo['class']());
+                        }
                     }
-                    if ($subject->$subjectGetter() === null) {
-                        $subject->$setMethod(new $propertyInfo['class']());
-                    }
-                    $this->normalize($source->$sourceGetter(), $subject->$subjectGetter(), $flags);
+
+                    $this->performNormalize($source->$sourceGetter(), $subject->$subjectGetter(), $flags);
                     continue 2;
                 case static::TYPE_ARRAY & $propertyInfo['type']:
                     if ($subject->$subjectGetter() === null) {
@@ -482,6 +645,7 @@ class Serializer
      * @throws EntityIsNotDescribed
      * @throws PropertyWithUnknownType
      * @throws EntityIsNotChosen
+     * @throws InvalidRegistrationOfProperty
      */
     private function arrayToObjectStrict(array $source, PropertyStrictAccessInterface &$subject, int $flags = self::ADDABLE): void
     {
@@ -515,11 +679,12 @@ class Serializer
                     if (static::TYPE_NULL & $propertyInfo['type']) {
                         if (empty($source[$nameProperty])) {
                             continue 2;
-                        } elseif ($subject->$subjectGetter() === null && isset($propertyInfo['class'])) {
+                        }
+                        if ($subject->$subjectGetter() === null && isset($propertyInfo['class'])) {
                             $subject->$setMethod(new $propertyInfo['class']());
                         }
                     }
-                    $this->normalize($source[$nameProperty], $subject->$subjectGetter(), $flags);
+                    $this->performNormalize($source[$nameProperty], $subject->$subjectGetter(), $flags);
                     continue 2;
                 case static::TYPE_ARRAY & $propertyInfo['type']:
                     if ($subject->$subjectGetter() === null) {
@@ -538,31 +703,13 @@ class Serializer
     }
 
     /**
-     * @param ContainsCollectionInterface $collection
-     * @param string $property
-     * @return string|null
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     */
-    public function getGetterByCollection(ContainsCollectionInterface $collection, string $property)
-    {
-        $class           = $collection->getClass();
-        $subjectCacheKey = $this->getKeyOfCachedClass($class, self::ADDABLE);
-
-        if (!$this->issetCache($subjectCacheKey)) {
-            $subjectCacheKey = $this->indexClass(new $class(), self::ADDABLE);
-        }
-
-        return static::$entityCache[$subjectCacheKey][$property]['getter'];
-    }
-
-    /**
      * @param array $source
      * @param mixed $subject
      * @param int $flags
      * @throws EntityIsNotChosen
      * @throws EntityIsNotDescribed
      * @throws PropertyWithUnknownType
+     * @throws InvalidRegistrationOfProperty
      */
     private function arrayToObject(array $source, &$subject, int $flags = self::ADDABLE): void
     {
@@ -585,7 +732,7 @@ class Serializer
              */
             if (is_array($value) && $subjectGetter !== null && $subject->$subjectGetter() instanceof ContainsCollectionInterface) {
                 foreach ((array)$value as $subKey => $subValue) {
-                    $subject->$subjectGetter()->set($subKey, $this->normalize($subValue, $subject->$subjectGetter()->getClass(), $flags));
+                    $subject->$subjectGetter()->set($subKey, $this->performNormalize($subValue, $subject->$subjectGetter()->getClass(), $flags));
                 }
                 continue;
             }
@@ -607,7 +754,7 @@ class Serializer
              */
             if ($subjectGetter !== null && is_object($subject->$subjectGetter())) {
                 if (is_array($value) || is_object($value) || ($this->isJsonProperty($subject, $property) && $this->isJson($value))) {
-                    $this->normalize($value, $subject->$subjectGetter($value), $flags);
+                    $this->performNormalize($value, $subject->$subjectGetter($value), $flags);
                     continue;
                 }
             }
@@ -635,12 +782,13 @@ class Serializer
      * @throws EntityIsNotChosen
      * @throws EntityIsNotDescribed
      * @throws PropertyWithUnknownType
+     * @throws InvalidRegistrationOfProperty
      */
     private function arrayToStdClass(array $source, stdClass &$subject, int $flags = self::ADDABLE): void
     {
         foreach ($source as $key => $item) {
             if (is_array($item)) {
-                $subject->$key = $this->normalize($item, new stdClass(), $flags);
+                $subject->$key = $this->performNormalize($item, new stdClass(), $flags);
             } else {
                 $subject->$key = $item;
             }
@@ -681,6 +829,7 @@ class Serializer
      * @throws EntityIsNotChosen
      * @throws EntityIsNotDescribed
      * @throws PropertyWithUnknownType
+     * @throws InvalidRegistrationOfProperty
      */
     private function objectToArrayStrict(PropertyStrictAccessInterface $source, array &$subject = [], int $flags = self::ADDABLE): void
     {
@@ -715,10 +864,10 @@ class Serializer
                     $subject[$nameProperty] = $source->$sourceGetter();
                     continue 2;
                 case static::TYPE_JSON & $propertyInfo['type'] && $this->isArrayWithJson($flags):
-                    $subject[$nameProperty] = $this->serialize($source->$sourceGetter(), 'json', $flags | Serializer::ONLY_FILLED);
+                    $subject[$nameProperty] = $this->performSerialize($source->$sourceGetter(), 'json', $flags | Serializer::ONLY_FILLED);
                     continue 2;
                 case static::TYPE_OBJECT & $propertyInfo['type']:
-                    $subject[$nameProperty] = $this->normalize($source->$sourceGetter(), $subject[$nameProperty], $flags);
+                    $subject[$nameProperty] = $this->performNormalize($source->$sourceGetter(), $subject[$nameProperty], $flags);
                     if ($this->isSerializeFilled($flags) && $subject[$nameProperty] === []) {
                         unset($subject[$nameProperty]);
                     }
@@ -776,6 +925,7 @@ class Serializer
      * @throws EntityIsNotChosen
      * @throws EntityIsNotDescribed
      * @throws PropertyWithUnknownType
+     * @throws InvalidRegistrationOfProperty
      */
     private function objectToArray(PropertyAccessInterface $source, array &$subject = [], int $flags = self::ADDABLE): void
     {
@@ -828,7 +978,7 @@ class Serializer
             }
 
             if ($this->isJsonProperty($source, $property) && $this->isArrayWithJson($flags)) {
-                $subject[$property] = $this->serialize($source->$getMethod(), 'json', $flags | Serializer::ONLY_FILLED);
+                $subject[$property] = $this->performSerialize($source->$getMethod(), 'json', $flags | Serializer::ONLY_FILLED);
                 continue;
             }
 
@@ -838,7 +988,7 @@ class Serializer
             if (method_exists($source, $getMethod) &&
                 (is_array($source->$getMethod()) || is_object($source->$getMethod()))
             ) {
-                $subject[$property] = $this->normalize($source->$getMethod(), $subject[$property], $flags);
+                $subject[$property] = $this->performNormalize($source->$getMethod(), $subject[$property], $flags);
                 if ($this->isSerializeFilled($flags) && $subject[$property] === []) {
                     unset($subject[$property]);
                 }
@@ -866,65 +1016,20 @@ class Serializer
      * @throws EntityIsNotChosen
      * @throws EntityIsNotDescribed
      * @throws PropertyWithUnknownType
+     * @throws InvalidRegistrationOfProperty
      */
     private function collectionToArray(ContainsCollectionInterface $source, array &$subject, int $flags)
     {
         if ($this->isClearIndexKey($flags)) {
             $i = 0;
             foreach ($source->getElements() as $element) {
-                $subject[$i++] = $this->normalize($element, [], $flags);
+                $subject[$i++] = $this->performNormalize($element, [], $flags);
             }
         } else {
-            $subject = $this->normalize($source->getElements(), $subject, $flags);
+            $subject = $this->performNormalize($source->getElements(), $subject, $flags);
         }
     }
 
-    /**
-     * @param $key
-     *
-     * @return string
-     */
-    protected function setMethod(string $key): string
-    {
-        return 'set' . ucfirst($key);
-    }
-
-    /**
-     * @param $key
-     *
-     * @return string
-     */
-    public function getMethod(string $key): string
-    {
-        return 'get' . ucfirst($key);
-    }
-
-    /**
-     * @param $key
-     *
-     * @return string
-     */
-    protected function addMethod(string $key): string
-    {
-        return 'add' . ucfirst($key);
-    }
-
-    /**
-     * @param $source
-     * @param string $key
-     * @return string
-     */
-    public function getExistingGetter($source, string $key): ?string
-    {
-        switch (true) {
-            case preg_match('/^is[A-Z].*/', $key) && method_exists($source, $key):
-                return $key;
-            case method_exists($source, $this->getMethod($key)):
-                return $this->getMethod($key);
-            default:
-                return null;
-        }
-    }
 
     /**
      * @param string $name
@@ -941,16 +1046,6 @@ class Serializer
         }
     }
 
-    /**
-     * @param $data
-     * @return bool
-     */
-    public function isJson($data): bool
-    {
-        $data = json_decode($data, true);
-
-        return (json_last_error() === JSON_ERROR_NONE) && is_array($data);
-    }
 
     /**
      * @param int $flags
@@ -1081,6 +1176,7 @@ class Serializer
      * @throws EntityIsNotChosen
      * @throws EntityIsNotDescribed
      * @throws PropertyWithUnknownType
+     * @throws InvalidRegistrationOfProperty
      */
     private function collectionToCollection(ContainsCollectionInterface $source, ContainsCollectionInterface $subject, int $flags)
     {
@@ -1092,33 +1188,16 @@ class Serializer
             if ($source->getClass() === $subject->getClass()) {
                 $subject->set($key, $element);
             } else {
-                $subject->set($key, $this->normalize($element, $subject->getClass(), $flags));
+                $subject->set($key, $this->performNormalize($element, $subject->getClass(), $flags));
             }
         }
     }
 
     /**
-     * Фильтруем лист по ключам
-     * @param ContainsCollectionInterface $collection
-     * @param array $keys
-     * @return ContainsCollectionInterface
+     * @param $object
+     * @param string $property
+     * @return bool
      */
-    public function getFilteredList(ContainsCollectionInterface $collection, array $keys): ContainsCollectionInterface
-    {
-        /**
-         * @var $newCollection ContainsCollectionInterface
-         */
-        $classList     = get_class($collection);
-        $newCollection = new $classList();
-        foreach ($keys as $key) {
-            if ($collection->has($key)) {
-                $newCollection->set($key, $collection->get($key));
-            }
-        }
-
-        return $newCollection;
-    }
-
     private function isJsonProperty($object, string $property): bool
     {
         if ($object instanceof HasJsonPropertiesInterface) {
@@ -1147,18 +1226,5 @@ class Serializer
                 return (float)($value);
         }
         throw new PropertyWithUnknownType('Неизвестный тип данных -' . $type);
-    }
-
-    /**
-     * @param $data
-     * @param $entity
-     * @return mixed
-     * @throws EntityIsNotChosen
-     * @throws EntityIsNotDescribed
-     * @throws PropertyWithUnknownType
-     */
-    public function entityFill($data, $entity)
-    {
-        return $this->normalize($data, $entity, Serializer::REWRITABLE | Serializer::CAMEL_FORCE | Serializer::ADDABLE | Serializer::FORCE_TYPE);
     }
 }
