@@ -24,6 +24,7 @@ class Serializer
      * ARRAY_WITHOUT_JSON - служебный ключ, который свидетельствует что внутри сущности может быть json и его нужно упаковать слив в один json
      * CLEAR_INDEX_KEY - очищает ключи-индексы из листов, когда преобразуешь в массив/json
      * RENAME_PROPERTIES - говорим сущности, что нужно замапить согласно интерфейсу
+     * MIGRATION -  заменит RENAME_PROPERTIES, переименование между обьектами по мапе
      */
     public const  ADDABLE            = 0b0000000001;
     public const  REWRITABLE         = 0b0000000010;
