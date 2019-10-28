@@ -54,17 +54,14 @@ class Serializer
      * @param       $subject
      * @param int $flags
      * @return mixed
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws InvalidRegistrationOfPropertyException
+     * @throws PropertyWithUnknownTypeException
      */
     public function normalize($source, $subject = null, int $flags = self::ADDABLE)
     {
-        try {
-            return $this->performNormalize($source, $subject, $flags);
-        } catch (\Throwable $exception) {
-            /**
-             * todo::возможно стоит ошибку упаковать в какой-нибудь ServiceError{}
-             */
-            return null;
-        }
+        return $this->performNormalize($source, $subject, $flags);
     }
 
     /**
@@ -72,17 +69,14 @@ class Serializer
      * @param string $type
      * @param int $flags
      * @return mixed
+     * @throws EntityIsNotChosenException
+     * @throws EntityIsNotDescribedException
+     * @throws InvalidRegistrationOfPropertyException
+     * @throws PropertyWithUnknownTypeException
      */
     public function serialize($source, string $type = 'json', int $flags = 0)
     {
-        try {
-            return $this->performSerialize($source, $type, $flags);
-        } catch (\Throwable $exception) {
-            /**
-             * todo::возможно стоит ошибку упаковать в какой-нибудь ServiceError{}
-             */
-            return null;
-        }
+        return $this->performSerialize($source, $type, $flags);
     }
 
     /**

@@ -4,8 +4,49 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "1e7209e188d45f6c1178140e3ca7a579",
-    "packages": [],
+    "content-hash": "52c013ca4dff6a9652b6238a9a51c406",
+    "packages": [
+        {
+            "name": "kluatr/exception",
+            "version": "2.1.4",
+            "source": {
+                "type": "git",
+                "url": "git@git.a:pet4back/libs/exception.git",
+                "reference": "7ff5e7cb063903b0e76d0047e14234cef5ef7383"
+            },
+            "require": {
+                "kluatr/response-codes": "^1.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Kluatr\\Exception\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "classmap": [
+                    "./tests"
+                ]
+            },
+            "time": "2019-08-20T08:32:01+00:00"
+        },
+        {
+            "name": "kluatr/response-codes",
+            "version": "1.1.30",
+            "source": {
+                "type": "git",
+                "url": "git@git.a:pet4back/libs/response-codes.git",
+                "reference": "589a8d87a443cc47da6a3732f11d39de6aa75831"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Kluatr\\ResponseCodes\\": "src/"
+                }
+            },
+            "time": "2019-10-25T14:09:14+00:00"
+        }
+    ],
     "packages-dev": [
         {
             "name": "clue/stream-filter",

@@ -2,9 +2,9 @@
 
 namespace Kluatr\Serializer\Error;
 
-use Exception;
+use Kluatr\Exception\BaseException;
 
-class EntityIsNotDescribedException extends Exception
+class EntityIsNotDescribedException extends BaseException
 {
 
 }
