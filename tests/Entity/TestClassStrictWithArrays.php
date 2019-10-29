@@ -18,6 +18,11 @@ class TestClassStrictWithArrays implements PropertyStrictAccessInterface
     /**
      * @var string|null
      */
+    protected $propertyString;
+
+    /**
+     * @var string|null
+     */
     protected $qwe;
 
     /**
@@ -28,8 +33,9 @@ class TestClassStrictWithArrays implements PropertyStrictAccessInterface
     public function getPropertiesStrict(): array
     {
         return [
-            'data' => ['type' => Serializer::TYPE_ARRAY],
-            'qwe'  => ['type' => Serializer::TYPE_STRING | Serializer::TYPE_NULL],
+            'data'           => ['type' => Serializer::TYPE_ARRAY],
+            'qwe'            => ['type' => Serializer::TYPE_STRING | Serializer::TYPE_NULL],
+            'propertyString' => ['type' => Serializer::TYPE_STRING | Serializer::TYPE_NULL],
         ];
     }
 
@@ -72,5 +78,21 @@ class TestClassStrictWithArrays implements PropertyStrictAccessInterface
     public function setQwe(?string $qwe): void
     {
         $this->qwe = $qwe;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPropertyString(): ?string
+    {
+        return $this->propertyString;
+    }
+
+    /**
+     * @param string|null $propertyString
+     */
+    public function setPropertyString(?string $propertyString): void
+    {
+        $this->propertyString = $propertyString;
     }
 }

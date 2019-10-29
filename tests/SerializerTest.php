@@ -1042,6 +1042,15 @@ class SerializerTest extends TestCase
         $this->assertEquals($array['json']['z'], 10);
         $array1 = $this->serializer->normalize($entity);
         $this->assertEquals($array1['json'], '{"x":3,"z":10}');
+
+        $entity = $this->serializer->normalize(['a' => 2, 'json' => ['x' => 3, 'z' => 10]], TestClassStrictWithJsonObject::class);
+        $array  = $this->serializer->normalize($entity, null, Serializer::ARRAY_WITHOUT_JSON | Serializer::ONLY_FILLED);
+        $arrayWithJson  = $this->serializer->normalize($entity, null, Serializer::ONLY_FILLED);
+        $json   = $this->serializer->serialize($entity, 'json', Serializer::ONLY_FILLED);
+        $this->assertTrue($entity->getJson() instanceof TestClassChild);
+        $this->assertTrue(is_array($array['json']));
+        $this->assertTrue(is_string(json_encode($arrayWithJson['json'])));
+        $this->assertTrue(is_string(json_encode($json)));
     }
 
     public function testListWithArrayToArray()
@@ -1117,11 +1126,77 @@ class SerializerTest extends TestCase
         $this->assertEquals($obj->getProp4(), 4);
     }
 
+    public function testOnlyFilledStrict()
+    {
+        $obj = new TestClassStrictWithArrays();
+        $obj->setPropertyString('asdfg');
+        $data = $this->serializer->normalize($obj, null, Serializer::ONLY_FILLED);
+        $this->assertEquals($data, ['propertyString' => 'asdfg', 'data' => []]);
+    }
+
+    /**
+     * @group runkit
+     */
+    public function testTimePackBigData()
+    {
+        $time = $this->getTime(
+            function()
+            {
+                for ($i = 0, $c = 20; $i < $c; $i++) {
+                    $entity = $this->serializer->normalize(SerializerFixtures::getBigDataJson(), BigDataListStrict::class);
+                    $json   = $this->serializer->serialize($entity);
+                }
+                $this->assertEquals(SerializerFixtures::getBigDataJson(), $json);
+            }
+        );
+        $msg  = PHP_EOL . 'Время упаковки Стрикт мод с кешем: ' . $time . ' секунд' . PHP_EOL;
+
+        $time = $this->getTime(
+            function()
+            {
+                for ($i = 0, $c = 20; $i < $c; $i++) {
+                    $entity = $this->serializer->normalize(SerializerFixtures::getBigDataJson(), BigDataList::class);
+                    $json   = $this->serializer->serialize($entity);
+                }
+                $this->assertEquals(SerializerFixtures::getBigDataJson(), $json);
+            }
+        );
+        $msg  .= 'Время упаковки magic мод с кешем: ' . $time . ' секунд' . PHP_EOL;
+
+        $time = $this->getTime(
+            function()
+            {
+                for ($i = 0, $c = 20; $i < $c; $i++) {
+                    $entity = $this->serializerOld->normalize(SerializerFixtures::getBigDataJson(), BigDataList::class);
+                    $json   = $this->serializerOld->serialize($entity);
+                }
+                $this->assertEquals(SerializerFixtures::getBigDataJson(), $json);
+            }
+        );
+        $msg  .= 'Время упаковки magic мод старым способом: ' . $time . ' секунд' . PHP_EOL;
+        echo $msg;
+    }
+
     /**
      * @return TestClass
      */
     private function getAnonymousObject(): TestClass
     {
         return new TestClass();
+    }
+
+
+    private function timeFormat($begin, $end): float
+    {
+        return \round($end - $begin, 2);
+    }
+
+    private function getTime(callable $function): float
+    {
+        $begin = microtime(true);
+        $function();
+        $end = microtime(true);
+
+        return $this->timeFormat($begin, $end);
     }
 }

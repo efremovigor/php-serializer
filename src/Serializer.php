@@ -25,6 +25,7 @@ class Serializer
      * CLEAR_INDEX_KEY - очищает ключи-индексы из листов, когда преобразуешь в массив/json
      * RENAME_PROPERTIES - говорим сущности, что нужно замапить согласно интерфейсу
      * MIGRATION -  заменит RENAME_PROPERTIES, переименование между обьектами по мапе
+     * FORCE_TYPE - Применить тип который указан в описании при преобразовании
      */
     public const  ADDABLE            = 0b0000000001;
     public const  REWRITABLE         = 0b0000000010;
@@ -485,12 +486,12 @@ class Serializer
     }
 
     /**
-     * @deprecated
      * @param PropertyStrictAccessInterface|PropertyAccessInterface $object
      * @param int $flags
      * @return string
      * @throws EntityIsNotDescribedException
      * @throws InvalidRegistrationOfPropertyException
+     * @deprecated
      */
     private function indexClass($object, int $flags)
     {
@@ -649,7 +650,7 @@ class Serializer
 
         foreach ($subject->getPropertiesStrict() as $nameProperty => $propertyInfo) {
 
-            if (!array_key_exists($nameProperty,$source)) {
+            if (!array_key_exists($nameProperty, $source)) {
                 continue;
             }
 
