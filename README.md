@@ -103,7 +103,6 @@ public function setIsPropertyNameBool($isPropertyNameBool){
 #####Если мы хотим заполнить обьект
 ```php
 /** 
- * Если мы хотим заполнить обьект
  * @param $data данные формата json/array/object 
  * @param $subject object|classname
 */
@@ -115,8 +114,7 @@ public function setIsPropertyNameBool($isPropertyNameBool){
 #####Если мы хотим получить `array` из `object`
 ```php
 /** 
- * Если мы хотим заполнить обьект
- * @param $data данные формата array 
+ * @param $data данные формата object 
 */
 
 /** идентичные действия */
@@ -128,7 +126,6 @@ $array = (new Serializer())->normalize($data,$array);
 #####Если мы хотим получить `json` из `object`|`array` 
 ```php
 /** 
- * Если мы хотим заполнить обьект
  * @param $data данные формата array 
 */
 
