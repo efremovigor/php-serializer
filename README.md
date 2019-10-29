@@ -2,7 +2,7 @@
 Преобразовывать данные можно любой вложенности и структуры в `json`/`array`/`object`/`objectList`.
 `Object` может быть вложен в другой `object`, в котором может быть `objectList`, преобразование в `json`/`array` и обратно - должно происходить без проблем
 #Описание обьекта
-Класс должен имплементить один из обьектов **`PropertyStrictAccessInterface`/`PropertyAccessInterface`**
+Класс должен имплементить один из интерфейсов **`PropertyStrictAccessInterface`/`PropertyAccessInterface`**
 
 Для того чтобы работать с листами нужно наследоваться от `EntityList`, либо имплементить `ContainsCollectionInterface`
 
@@ -10,7 +10,7 @@
 
 + Работа с листом по странично
 + Сортировка внутри листа
-+ Поиск внутри листа по значениею/значениям
++ Поиск внутри листа по значению/значениям
 + Переиндексация листа по полю
 + Получение колонки из листа
 
@@ -61,7 +61,7 @@ public function setIsPropertyNameBool($isPropertyNameBool){
 ```
 ###PropertyStrictAccessInterface
 
-Условно строгий тип заполнения, в отличии от `PropertyAccessInterface` использует более простой алгоритм, который непрощает неправильного заполнения свойств и их методов
+Условно строгий тип заполнения, в отличии от `PropertyAccessInterface` использует более простой алгоритм, который не прощает неправильного заполнения свойств и их методов
 
 ####типы данных
 
@@ -91,7 +91,7 @@ public function setIsPropertyNameBool($isPropertyNameBool){
     }
 ```
 
-Указывать можно несколько типо одновременно, сделано для таких случаев, когда у нас поле может быть не определенно, т.е. иметь значение `null` и один типов `int`|`string`|`object`|`array` 
+Указывать можно несколько типов одновременно, сделано для таких случаев, когда у нас поле может быть не определено, т.е. иметь значение `null` и один типов `int`|`string`|`object`|`array` 
 
 Так-же часто имеет смысл указывать одновременно `TYPE_JSON` + `TYPE_OBJECT`, это сделано для того, чтобы мы могли при заполнении обьекта с помощью массива налету преобразовать `json`, который находится внутри одного из свойств, и упаковать его в обьект, который либо уже существует, либо создать его на лету и так-же упаковать(для этого нужно указать свойство `class` и поле должно иметь флаг `TYPE_NULL`)
 
@@ -136,7 +136,7 @@ $array = (new Serializer())->normalize($data,$array);
 $array = (new Serializer())->serialize($data);
 $array = (new Serializer())->serialize($data,'json');
 
-/** это лействия оставит только заполнение поля */
+/** это действия оставит только заполнение поля */
 $array = (new Serializer())->jsonSignificant($data);
 ```
 #Простые преобразования
@@ -250,7 +250,7 @@ $object->json->c     = new stdClass();
 $i                   = 0;
 $object->json->c->$i = $child;
 
-/** превратит в подобный массив */
+/** превратится в подобный массив */
 $array  === [
     'a'    => 5,
     'json' => [
@@ -362,7 +362,7 @@ $json === '[{...},{...},{...}]';
 **`Serializer::MIGRATION`** - случит для миграции `obj.field` => `obj1.field` между обьектами, нужно в обьекте-источнике implemented `MigrationEntityInterface` и описать какие поля нужно изменить при переносе в методе `getEntityRelations`
 ```php
 
-/**
+/** Example implemented MigrationEntityInterface */
 public function getEntityRelations(): array
     {
         return [
@@ -383,6 +383,6 @@ $obj1 = new Example1();
 $obj1->getA() === $obj->getC();
 $obj1->getB() === $obj->getD();
 ```
-**`Serializer::FORCE_TYPE`** - работает совместно с `PropertyStrictAccessInterface` преобразует типы согласно как указано в описании обьекта
+**`Serializer::FORCE_TYPE`** - работает совместно с `PropertyStrictAccessInterface` преобразует типы согласно тому, как указано в описании обьекта
 
 
