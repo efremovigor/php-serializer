@@ -1,6 +1,6 @@
 {
   "name": "kluatr/serializer",
-  "version": "1.0",
+  "version": "1.0.0",
   "autoload": {
     "psr-4": {
       "Kluatr\\Serializer\\": "./src/",

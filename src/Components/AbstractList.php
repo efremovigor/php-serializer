@@ -135,14 +135,10 @@ abstract class AbstractList implements Iterator, Countable
      */
     public function seek($position): void
     {
-        try {
-            if (!isset($this->elements[$position])) {
-                throw new OutOfBoundsException("invalid seek position ($position)");
-            }
-            $this->position = $position;
-        } catch (OutOfBoundsException $e) {
-            echo $e->getMessage() . "\n";
+        if (!isset($this->elements[$position])) {
+            throw new OutOfBoundsException("invalid seek position ($position)");
         }
+        $this->position = $position;
     }
 
     /**
@@ -163,17 +159,17 @@ abstract class AbstractList implements Iterator, Countable
 
     public function getFirstElement()
     {
-        $element = array_slice($this->getElements(), 0, 1);
+        reset($this->elements);
 
-        return array_shift($element);
+        return $this->elements[key($this->elements)];
     }
 
 
     public function getLastElement()
     {
-        $element = array_slice($this->getElements(), 0, 1);
+        end($this->elements);
 
-        return array_pop($element);
+        return $this->elements[key($this->elements)];
     }
 
     /**
@@ -211,7 +207,7 @@ abstract class AbstractList implements Iterator, Countable
          * @var self $list
          */
         $list = new $this();
-        foreach ($this->getElements() as $key => $element) {
+        foreach ($this->elements as $key => $element) {
             if ($i >= $page * $limit && $i < $page * $limit + $limit && $list->count() < $limit) {
                 $list->set($key, $element);
             }
@@ -246,10 +242,10 @@ abstract class AbstractList implements Iterator, Countable
 
         switch ($sort->getType()) {
             case 'string':
-                $list->setElements($sort->sortString($this->getElements(), $method));
+                $list->setElements($sort->sortString($this->elements, $method));
                 break;
             case 'int':
-                $list->setElements($sort->sortInteger($this->getElements(), $method));
+                $list->setElements($sort->sortInteger($this->elements, $method));
                 break;
         }
 
@@ -271,7 +267,7 @@ abstract class AbstractList implements Iterator, Countable
         if ($list instanceof ContainsCollectionInterface) {
             $method = static::getSerializer()->getGetterByCollection($list, $property);
 
-            foreach ($this->getElements() as $key => $element) {
+            foreach ($this->elements as $key => $element) {
                 if ($element->$method() === $value) {
                     $list->set($key, $element);
                 }
@@ -295,7 +291,7 @@ abstract class AbstractList implements Iterator, Countable
         $list = new $this();
         if ($list instanceof ContainsCollectionInterface) {
             $method = static::getSerializer()->getGetterByCollection($list, $property);
-            foreach ($this->getElements() as $key => $element) {
+            foreach ($this->elements as $key => $element) {
                 if (in_array($element->$method(), $values)) {
                     $list->set($key, $element);
                 }
@@ -322,7 +318,7 @@ abstract class AbstractList implements Iterator, Countable
             } catch (EntityIsNotChosenException $e) {
                 $method = static::getSerializer()->getMethod($property);
             }
-            foreach ($this->getElements() as $key => $element) {
+            foreach ($this->elements as $key => $element) {
                 if (!method_exists($element, $method)) {
                     throw new EntityIsNotChosenException('Невозможно определить getter для переиндексации листа');
                 }
@@ -348,7 +344,7 @@ abstract class AbstractList implements Iterator, Countable
             $method = static::getSerializer()->getGetterByCollection($this, $property);
 
             $i = 0;
-            foreach ($this->getElements() as $value) {
+            foreach ($this->elements as $value) {
                 $array[$value->$method()] = $i++;
             }
         }

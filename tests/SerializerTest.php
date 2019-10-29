@@ -1177,6 +1177,22 @@ class SerializerTest extends TestCase
         echo $msg;
     }
 
+    public function testAbstractList(){
+        $object = new TestCollectionClass();
+        $obj = new TestClass();
+        $obj->setA(2);
+        $object->set(2,$obj);
+        $obj = new TestClass();
+        $obj->setA(3);
+        $object->set(3,$obj);
+        $obj = new TestClass();
+        $obj->setA(4);
+        $object->set(4,$obj);
+
+        $this->assertEquals($object->getFirstElement()->getA(),2);
+        $this->assertEquals($object->getLastElement()->getA(),4);
+    }
+
     /**
      * @return TestClass
      */
