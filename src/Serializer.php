@@ -952,7 +952,7 @@ class Serializer
                  * $fakeSubject не пуст если внутри $sourceData лежат обьекты
                  */
                 $fakeSubject = [];
-                foreach ($sourceData as $key => &$data) {
+                foreach ($sourceData as $key => $data) {
                     if (is_object($data) && $data instanceof PropertyAccessInterface) {
                         $fakeSubject[$key] = [];
                         $this->objectToArray($sourceData[$key], $fakeSubject[$key]);
