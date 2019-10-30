@@ -1,7 +1,7 @@
 `Serializer` служит для упаковки и распаковки данных из разных состояний. 
 Преобразовывать данные можно любой вложенности и структуры в `json`/`array`/`object`/`objectList`.
 `Object` может быть вложен в другой `object`, в котором может быть `objectList`, преобразование в `json`/`array` и обратно - должно происходить без проблем
-#Описание обьекта
+# Описание обьекта
 Класс должен имплементить один из интерфейсов **`PropertyStrictAccessInterface`/`PropertyAccessInterface`**
 
 Для того чтобы работать с листами нужно наследоваться от `EntityList`, либо имплементить `ContainsCollectionInterface`
@@ -21,17 +21,17 @@
 
 **`PropertyAccessInterface`** - описание полей обьекта(не рекомендуется)
 
-###EntityList
+### EntityList
 
 Нужно просто указать какой класс будет внутри метода `getClass`, служит только при заполнении новыми элементами в лист на лету,
 если этого не сделать будет ошибка при заполнении, при других действия проблема не должна возникнуть
 
-###PropertyAccessInterface
+### PropertyAccessInterface
 
 Содержит метод `getProperties` - который должен отдавать массив свойств доступных для заполнения/преобразования
 Нужно указать создать для каждого поля `getter` и `setter`.
 
-####Пример
+#### Пример
 ```php
 public function getProperties(){
     'propertyNameInt',
@@ -59,11 +59,11 @@ public function setIsPropertyNameBool($isPropertyNameBool){
     $this->isPropertyNameBool = $isPropertyNameBool;
 }
 ```
-###PropertyStrictAccessInterface
+### PropertyStrictAccessInterface
 
 Условно строгий тип заполнения, в отличии от `PropertyAccessInterface` использует более простой алгоритм, который не прощает неправильного заполнения свойств и их методов
 
-####типы данных
+#### Типы данных
 
 + `TYPE_INT` 
 + `TYPE_STRING`
@@ -99,8 +99,8 @@ public function setIsPropertyNameBool($isPropertyNameBool){
 
 Если при заполнении указать флаг `Serializer::REWRITABLE` - геттеры игнорируются, иначе они проверяются что в свойстве ничего нет
 
-#Простое использование
-#####Если мы хотим заполнить обьект
+# Простое использование
+##### Если мы хотим заполнить обьект
 ```php
 /** 
  * @param $data данные формата json/array/object 
@@ -111,7 +111,7 @@ public function setIsPropertyNameBool($isPropertyNameBool){
 (new Serializer())->entityFill($data, $subject)
 (new Serializer())->normalize($data, $subject, Serializer::REWRITABLE | Serializer::CAMEL_FORCE | Serializer::ADDABLE | Serializer::FORCE_TYPE);
 ```
-#####Если мы хотим получить `array` из `object`
+##### Если мы хотим получить `array` из `object`
 ```php
 /** 
  * @param $data данные формата object 
@@ -123,7 +123,7 @@ $array = (new Serializer())->normalize($data,null);
 $array = (new Serializer())->normalize($data,[]);
 $array = (new Serializer())->normalize($data,$array);
 ```
-#####Если мы хотим получить `json` из `object`|`array` 
+##### Если мы хотим получить `json` из `object`|`array` 
 ```php
 /** 
  * @param $data данные формата array 
@@ -136,8 +136,8 @@ $array = (new Serializer())->serialize($data,'json');
 /** это действия оставит только заполнение поля */
 $array = (new Serializer())->jsonSignificant($data);
 ```
-#Простые преобразования
-+ #####Ассоциативный `array` -> `object`
+# Простые преобразования
++ ##### Ассоциативный `array` -> `object`
 ```php
 $array = ['a'=>1,'b'=>'b','c'=>['isSt'=>false];
 
@@ -147,7 +147,7 @@ $array = ['a'=>1,'b'=>'b','c'=>['isSt'=>false];
 /** Может принимать готовый обьект */
 (new Serializer())->normalize($array,new Example());
 ```
-+ #####Массив массивов -> `objectList`
++ ##### Массив массивов -> `objectList`
 ```php
 $array = [
     ['a'=>1,'b'=>'b','c'=>['isSt'=>false],
@@ -161,7 +161,7 @@ $array = [
 /** Может принимать готовый обьект */
 (new Serializer())->normalize($array,new ExampleList());
 ```
-+ #####`json` -> `array`
++ ##### `json` -> `array`
 ```php
 $json = [
  {"a":1,"b":"b","c":{"isSt":false}},
@@ -172,7 +172,7 @@ $json = [
 (new Serializer())->normalize($json);
 (new Serializer())->normalize($json,null);
 ```
-+ #####`json` -> `object`
++ ##### `json` -> `object`
 ```php
 $json = [
  {"a":1,"b":"b","c":{"isSt":false}},
@@ -186,20 +186,20 @@ $json = [
 /** Может принимать готовый обьект */
 (new Serializer())->normalize($json,new ExampleList());
 ```
-+ #####`object` -> `array`
++ ##### `object` -> `array`
 ```php
 /** поведение идентично */
 (new Serializer())->normalize($object,null);
 (new Serializer())->normalize($object);
 (new Serializer())->normalize($object,[]);
 ```
-+ #####`object` -> `json`
++ ##### `object` -> `json`
 ```php
 /** поведение идентично */
 (new Serializer())->serialize($object);
 (new Serializer())->serialize($object,'json');
 ```
-+ #####`object` -> `object`
++ ##### `object` -> `object`
 ```php
 $obj = new Example();
 $obj->setA('Qwerty');
@@ -211,7 +211,7 @@ $obj1->getA() === $obj->getA();
 $obj1->getB() === $obj->getB();
 
 ```
-+ #####`objectList` -> `objectList`
++ ##### `objectList` -> `objectList`
 ```php
 $list1 = new List();
 $list->set('unicalId1',$obj);
@@ -224,7 +224,7 @@ $list2->set('unicalId1111',$obj);
 /**  $list3 будет содержать все элементы из обоих листов */
 $list3 = (new Serializer())->normalize($list1,$list2);
 ```
-+ #####`stdClass` -> `array`
++ ##### `stdClass` -> `array`
 ```php
 $obj = new stdClass();
 $obj->a = 1;
@@ -232,7 +232,7 @@ $obj->b = 4;
 $array = (new Serializer())->normalize(new stdClass);
 $array === ['a'=>1,'b'=>4];
 ```
-+ #####`array` -> `stdClass`
++ ##### `array` -> `stdClass`
 ```php
 /** какой-то stdClass */
 $object = new stdClass();
@@ -265,15 +265,15 @@ $array  === [
 /** при подобном преобразовании */
 $array = (new Serializer())->normalize(new stdClass);
 ```
-+ #####`stdClass` -> `array` -> `object`
++ ##### `stdClass` -> `array` -> `object`
  Преобразование разбивается на этапы под капотом и делает стандартные действия
 
-#Преобразования с флагами
+# Преобразования с флагами
 **`Serializer::ADDABLE`** - является дефолтным флагом при заполнении данных.
 
 Он указывает на то, что если свойство обьекта является массивом и оно уже содержит данные - то данные из `$array` по имени свойства будут перезаписаны по ключам
 
-#####Если Example implemented PropertyAccessInterface
+##### Если Example implemented PropertyAccessInterface
 ```php
 $array = ['data'=>[1,2,3,4]];
 $obj = new Example();
@@ -281,7 +281,7 @@ $obj->setData([5,6,7,8,9,10])
 $obj = (new Serializer())->normalize($array, $obj, Serializer::ADDABLE);
 $obj['data'] === [1,2,3,4,9,10,1,2,3,4];
 ```
-#####Если Example implemented PropertyStrictAccessInterface
+##### Если Example implemented PropertyStrictAccessInterface
 ```php
 $array = ['data'=>[1,2,3,4]];
 $obj = new Example();
