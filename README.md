@@ -74,7 +74,7 @@ public function setIsPropertyNameBool($isPropertyNameBool){
 + `TYPE_NULL`  
 + `TYPE_ARRAY` 
 
-####Пример реализации метода
+#### Пример реализации метода
 ```php
     public function getPropertiesStrict(): array
     {
