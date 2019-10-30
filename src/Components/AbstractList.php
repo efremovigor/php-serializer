@@ -26,7 +26,7 @@ abstract class AbstractList implements Iterator, Countable
     /**
      * @var Serializer
      */
-    private static $serializer;
+    protected static $serializer;
 
     /**
      * @return Serializer
