@@ -1,0 +1,17 @@
+{
+  "name": "efremovigor/serializer",
+  "version": "1.0.1",
+  "autoload": {
+    "psr-4": {
+      "Lib\\Serializer\\": "./src/",
+      "Test\\Lib\\Serializer\\": "./tests/"
+    }
+  },
+  "require": {
+    "php": "7.2.*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "8.3.4",
+    "php-http/curl-client": "*"
+  }
+}

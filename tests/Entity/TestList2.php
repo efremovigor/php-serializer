@@ -1,0 +1,18 @@
+<?php
+
+namespace Test\Lib\Serializer\Entity;
+
+use Lib\Serializer\ContainsCollectionInterface;
+
+class TestList2 extends AbstractList implements ContainsCollectionInterface
+{
+
+    /**
+     * Имя класса списка
+     * @return string
+     */
+    public function getClass(): string
+    {
+        return TestList3::class;
+    }
+}
