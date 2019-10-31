@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "52c013ca4dff6a9652b6238a9a51c406",
+    "content-hash": "184aa4308a1885a99e8d1853cc137aff",
     "packages": [
         {
             "name": "kluatr/exception",

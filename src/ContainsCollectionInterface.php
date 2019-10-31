@@ -33,6 +33,12 @@ interface ContainsCollectionInterface
     public function getElements(): array;
 
     /**
+     * Назначение элементов списка
+     * @param array $elements
+     */
+    public function setElements(array $elements): void;
+
+    /**
      * @param $key
      * @return mixed|null
      */
