@@ -12,7 +12,7 @@ use stdClass;
  * Class Serializer
  * @package Helpers
  */
-class Serializer
+class Serializer implements SerializerInterface
 {
 
     /**

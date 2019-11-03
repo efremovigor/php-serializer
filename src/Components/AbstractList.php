@@ -278,6 +278,27 @@ abstract class AbstractList implements Iterator, Countable
     }
 
     /**
+     * @param array $keys
+     * @return ContainsCollectionInterface
+     */
+    public function getFilteredList(array $keys): ContainsCollectionInterface
+    {
+        /**
+         * @var $list ContainsCollectionInterface
+         */
+        $list = new $this();
+        if ($list instanceof ContainsCollectionInterface) {
+            foreach ($keys as $key) {
+                if ($this->has($key)) {
+                    $list->set($key, $collection->get($key));
+                }
+            }
+        }
+
+        return $list;
+    }
+
+    /**
      * Ищет элемент внутри списка, по нахождению element->$property в массиве $values
      * @param string $property
      * @param array $values
