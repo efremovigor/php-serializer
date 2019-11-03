@@ -9,11 +9,11 @@ namespace Kluatr\Serializer;
  */
 interface SerializerInterface
 {
-    public function normalize($source, $subject = null, int $flags);
+    public function normalize($source, $subject = null, int $flags = 0);
 
-    public function serialize($source, string $type, int $flags);
+    public function serialize(string $type = 'json', int $flags = 0);
 
-    public function jsonSignificant($source, int $flags);
+    public function jsonSignificant($source, int $flags = 0);
 
     public function entityFill($data, $entity);
 
