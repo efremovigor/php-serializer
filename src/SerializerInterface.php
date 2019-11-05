@@ -11,7 +11,7 @@ interface SerializerInterface
 {
     public function normalize($source, $subject = null, int $flags = 0);
 
-    public function serialize(string $type = 'json', int $flags = 0);
+    public function serialize($source, string $type = 'json', int $flags = 0);
 
     public function jsonSignificant($source, int $flags = 0);
 
