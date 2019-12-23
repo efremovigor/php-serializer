@@ -6,9 +6,8 @@ use Countable;
 use Iterator;
 use Kluatr\Serializer\ContainsCollectionInterface;
 use Kluatr\Serializer\Error\EntityIsNotChosenException;
-use Kluatr\Serializer\Error\EntityIsNotDescribedException;
-use Kluatr\Serializer\Error\InvalidRegistrationOfPropertyException;
 use Kluatr\Serializer\Serializer;
+use Kluatr\Serializer\SerializerInterface;
 use OutOfBoundsException;
 
 abstract class AbstractList implements Iterator, Countable
@@ -23,15 +22,17 @@ abstract class AbstractList implements Iterator, Countable
      * @var array
      */
     protected $elements = [];
+
     /**
-     * @var Serializer
+     * @var SerializerInterface
      */
     protected static $serializer;
 
     /**
-     * @return Serializer
+     * todo::Вынести зависимые методы в Utils lib и удалить зависимость
+     * @return SerializerInterface
      */
-    public function getSerializer(): Serializer
+    public function getSerializer(): SerializerInterface
     {
         if (static::$serializer === null) {
             static::$serializer = new Serializer();
@@ -223,9 +224,6 @@ abstract class AbstractList implements Iterator, Countable
     /**
      * @param SortBy $sort
      * @return $this
-     * @throws EntityIsNotChosenException
-     * @throws EntityIsNotDescribedException
-     * @throws InvalidRegistrationOfPropertyException
      */
     public function getSortedList(SortBy $sort): self
     {
@@ -257,9 +255,6 @@ abstract class AbstractList implements Iterator, Countable
      * @param string $property
      * @param string $value
      * @return $this|ContainsCollectionInterface
-     * @throws EntityIsNotChosenException
-     * @throws EntityIsNotDescribedException
-     * @throws InvalidRegistrationOfPropertyException
      */
     public function fetchBy(string $property, $value): self
     {
@@ -290,7 +285,7 @@ abstract class AbstractList implements Iterator, Countable
         if ($list instanceof ContainsCollectionInterface) {
             foreach ($keys as $key) {
                 if ($this->has($key)) {
-                    $list->set($key, $collection->get($key));
+                    $list->set($key, $this->get($key));
                 }
             }
         }
@@ -303,9 +298,6 @@ abstract class AbstractList implements Iterator, Countable
      * @param string $property
      * @param array $values
      * @return $this|ContainsCollectionInterface
-     * @throws EntityIsNotChosenException
-     * @throws EntityIsNotDescribedException
-     * @throws InvalidRegistrationOfPropertyException
      */
     public function fetchByArray(string $property, array $values): self
     {
@@ -327,8 +319,6 @@ abstract class AbstractList implements Iterator, Countable
      * @param string $property
      * @return $this|self|ContainsCollectionInterface
      * @throws EntityIsNotChosenException
-     * @throws EntityIsNotDescribedException
-     * @throws InvalidRegistrationOfPropertyException
      */
     public function reIndex(string $property): self
     {
@@ -354,9 +344,6 @@ abstract class AbstractList implements Iterator, Countable
      * Отдает данные с одной колонки
      * @param string $property
      * @return array
-     * @throws EntityIsNotChosenException
-     * @throws EntityIsNotDescribedException
-     * @throws InvalidRegistrationOfPropertyException
      */
     public function getColumn(string $property): array
     {
