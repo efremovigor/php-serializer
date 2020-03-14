@@ -1,5 +1,5 @@
 {
-  "name": "kluatr/serializer",
+  "name": "php-serializer",
   "version": "1.0.4",
   "autoload": {
     "psr-4": {
